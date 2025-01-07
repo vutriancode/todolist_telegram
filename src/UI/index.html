@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>ToDo List UI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+        }
+        h1 {
+            color: #2b3e50;
+        }
+        form, .tasks-container, .curl-snippet {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        input, select {
+            margin-bottom: 1rem;
+            width: 100%;
+            padding: 0.5rem;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            background-color: #2b3e50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #1f2d3a;
+        }
+        pre {
+            background-color: #f7f7f7;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>ToDo List</h1>
+
+    <!-- Create Task Form -->
+    <form id="create-task-form">
+        <h2>Create Task</h2>
+        <label>Title:</label>
+        <input type="text" id="title" required />
+        <label>Description:</label>
+        <input type="text" id="description" required />
+    
+        <label>Due Date (YYYY-MM-DD):</label>
+        <input type="datetime-local" id="due_date" required />
+        <label>Priority:</label>
+        <select id="priority">
+            <option value="Normal">Normal</option>
+            <option value="High">High</option>
+            <option value="Low">Low</option>
+        </select>
+        <label>Tags (comma separated):</label>
+        <input type="text" id="tags" />
+        <label>recurrence:</label>
+        <select id="recurrence">
+            <option value="Once">Once</option>
+            <option value="Daily">Daily</option>
+            <option value="Weekly">Weekly</option>
+            <option value="Monthly">Monthly</option>
+            <option value="Yearly">Yearly</option>
+        </select>
+        <button type="submit">Create</button>
+    </form>
+
+    <!-- List Tasks Button and Results -->
+    <div class="tasks-container">
+        <h2>All Tasks</h2>
+        <button id="list-tasks-btn">List Tasks</button>
+        <button id="update-task-btn">Update Task</button>
+        <button id="delete-task-btn">Delete Task</button>
+        <script>
+            const updateBtn = document.getElementById('update-task-btn');
+            const deleteBtn = document.getElementById('delete-task-btn');
+
+            updateBtn.addEventListener('click', async () => {
+                const taskId = prompt("Enter the ID of the task to update:");
+                if (!taskId) return;
+
+                const title = prompt("Enter new title:");
+                const description = prompt("Enter new description:");
+                const due_date = prompt("Enter new due date (YYYY-MM-DD):");
+                const priority = prompt("Enter new priority (Normal, High, Low):");
+                const recurrence = prompt("Enter new recurrence (once, daily, weekly, monthly, yearly):");
+                const tags = prompt("Enter new tags (comma separated):").split(',').map(tag => tag.trim());
+
+                try {
+                    const response = await fetch(`http://localhost:8000/tasks/${taskId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            title, description, due_date, priority, tags, recurrence, completed: false
+                        })
+                    });
+                    const data = await response.json();
+                    alert(data.message);
+                } catch (error) {
+                    console.error(error);
+                }
+            });
+
+            deleteBtn.addEventListener('click', async () => {
+                const taskId = prompt("Enter the ID of the task to delete:");
+                if (!taskId) return;
+
+                try {
+                    const response = await fetch(`http://localhost:8000/tasks/${taskId}`, {
+                        method: 'DELETE'
+                    });
+                    const data = await response.json();
+                    alert(data.message);
+                } catch (error) {
+                    console.error(error);
+                }
+            });
+        </script>
+        <div>
+            <table id="tasksTable" style="border-collapse: collapse; width: 100%;">
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid #ccc; padding: 8px;">ID</th>
+                        <th style="border: 1px solid #ccc; padding: 8px;">Title</th>
+                        <th style="border: 1px solid #ccc; padding: 8px;">Description</th>
+                        <th style="border: 1px solid #ccc; padding: 8px;">Due Date</th>
+                        <th style="border: 1px solid #ccc; padding: 8px;">Priority</th>
+                        <th style="border: 1px solid #ccc; padding: 8px;">Recurrence</th>
+                        <th style="border: 1px solid #ccc; padding: 8px;">Tags</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <script>
+        function displayTasksAsTable(tasks) {
+            const tbody = document.querySelector('#tasksTable tbody');
+            tbody.innerHTML = '';
+            tasks.forEach(task => {
+                let row = `<tr>
+                    <td style="border: 1px solid #ccc; padding: 8px;">${task.id}</td>
+                    <td style="border: 1px solid #ccc; padding: 8px;">${task.title}</td>
+                    <td style="border: 1px solid #ccc; padding: 8px;">${task.description}</td>
+                    <td style="border: 1px solid #ccc; padding: 8px;">${task.due_date}</td>
+                    <td style="border: 1px solid #ccc; padding: 8px;">${task.priority}</td>
+                    <td style="border: 1px solid #ccc; padding: 8px;">${task.recurrence}</td>   
+                    <td style="border: 1px solid #ccc; padding: 8px;">${(task.tags || []).join(', ')}</td>
+                </tr>`;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+        </script>
+        <div id="tasks"></div>
+    </div>
+
+    <!-- cURL Snippet -->
+    <div class="curl-snippet">
+        <h2>cURL to Create Task</h2>
+        <pre>
+curl -X POST http://localhost:8000/tasks \
+    -H "Content-Type: application/json" \
+    -d '{"title":"New Task","description":"Description","due_date":"2023-12-31","priority":"Normal","tags":[],"completed":false}'
+        </pre>
+    </div>
+
+    <script>
+        const form = document.getElementById('create-task-form');
+        const listBtn = document.getElementById('list-tasks-btn');
+        const tasksDiv = document.getElementById('tasks');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const due_date = document.getElementById('due_date').value;
+            const priority = document.getElementById('priority').value;
+            const recurrence = document.getElementById('recurrence').value.toLowerCase();
+            const tags = document.getElementById('tags').value.split(',').map(tag => tag.trim());
+            
+            console.log(JSON.stringify({
+                        title, description, due_date, priority, tags, completed: false
+                    }));
+
+            try {
+                
+                const response = await fetch('http://localhost:8000/tasks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title, description, due_date, priority, tags, recurrence, completed: false
+                    })
+                });
+                const data = await response.json();
+                alert(data.message);
+                form.reset();
+            } catch (error) {
+                console.error(error);
+            }
+        });
+
+        listBtn.addEventListener('click', async () => {
+            try {
+                const response = await fetch('http://localhost:8000/tasks');
+                const data = await response.json();
+                displayTasksAsTable(data);
+                // tasksDiv.innerHTML = JSON.stringify(data, null, 2);
+            } catch (error) {
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>
