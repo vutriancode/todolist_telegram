@@ -1,0 +1,1 @@
+0 16 * * * python3 -u /home/anvt/Desktop/todolist_telegram/remind.py
