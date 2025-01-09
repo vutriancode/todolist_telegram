@@ -3,8 +3,8 @@ from api.db import get_tasks_for_day
 from datetime import datetime
 
 # Telegram bot token and chat ID
-BOT_TOKEN = '8115272386:AAE4YiBjiAp1U8Z0sMy09UTtIy5_DNJxjHA'
-CHAT_ID = '-1002422021123'
+BOT_TOKEN = 'token_here'
+CHAT_ID = 'chat_id'
 
 def send_message(chat_id, text):
     url = f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage'
