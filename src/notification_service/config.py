@@ -1,3 +1,3 @@
 # Telegram bot token and chat ID
-BOT_TOKEN = '8115272386:AAE4YiBjiAp1U8Z0sMy09UTtIy5_DNJxjHA'
-CHAT_ID = '-1002422021123'
+BOT_TOKEN = 'bot_token_here'
+CHAT_ID = '-chat_id'
